@@ -1,0 +1,7 @@
+[package]
+name = "semaphore"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+dlog = {git = "ssh://gitea@gitea.mermaid-gecko.ts.net/Metropolis/dlog.git"}

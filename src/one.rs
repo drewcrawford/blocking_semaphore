@@ -2,44 +2,100 @@
 Semaphores which are only "one-high", they can hold values of 0-1.
 */
 
-use std::sync::Condvar;
+use std::hash::Hash;
+use std::sync::{Arc, Condvar};
 use dlog::perfwarn;
 
-pub struct Semaphore {
+#[derive(Debug)]
+struct Shared {
     c: Condvar,
     m: std::sync::Mutex<bool>
 }
 
+#[derive(Debug,Clone)]
+pub struct Semaphore {
+    shared: Arc<Shared>
+}
+
+impl PartialEq for Semaphore {
+    fn eq(&self, other: &Self) -> bool {
+        Arc::ptr_eq(&self.shared, &other.shared)
+    }
+}
+
+impl Eq for Semaphore {}
+
+impl Hash for Semaphore {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        Arc::as_ptr(&self.shared).hash(state);
+    }
+}
+
+impl Default for Semaphore {
+    /**
+    The default Semaphore is unsignaled.
+*/
+    fn default() -> Self {
+        Self::new(false)
+    }
+}
+
+
+
+
+
+
+
+
 impl Semaphore {
-    fn signal(&self) {
+    /**
+    Creates a new sempahore, specifying if it is initially signalled.
+*/
+    pub fn new(initially_signaled: bool) -> Semaphore {
+        Semaphore {
+            shared: Arc::new(Shared {
+                c: Condvar::new(),
+                m: std::sync::Mutex::new(initially_signaled)
+            })
+        }
+    }
+}
+
+impl Semaphore {
+    /**
+    Signals (increments) the semaphore.
+*/
+    pub fn signal(&self) {
         {
             perfwarn!("Semaphore implementation uses mutex", {
-                let mut guard = self.m.lock().unwrap();
+                let mut guard = self.shared.m.lock().unwrap();
                 assert!(!*guard, "Signalling a semaphore that is already signalled");
                 *guard = true;
-                self.c.notify_one();
+                self.shared.c.notify_one();
 
             });
 
         }
     }
 
-    fn wait(&self) {
+    /**Waits (decrements) the semaphore.
+    */
+    pub fn wait(&self) {
         perfwarn!("Semaphore implementation uses mutex", {
-            let mut g = self.c.wait_while(self.m.lock().unwrap(), |guard| !*guard).unwrap();
+            let mut g = self.shared.c.wait_while(self.shared.m.lock().unwrap(), |guard| !*guard).unwrap();
             *g = false;
         });
 
     }
+
+
+
 }
 
 #[cfg(test)] mod test {
     #[test] fn test_semaphore() {
         dlog::context::Context::reset();
-        let s = super::Semaphore {
-            c: std::sync::Condvar::new(),
-            m: std::sync::Mutex::new(false)
-        };
+        let s = super::Semaphore::new(false);
         s.signal();
         s.wait();
     }

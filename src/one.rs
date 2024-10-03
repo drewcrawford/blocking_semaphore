@@ -41,15 +41,9 @@ impl Default for Semaphore {
 }
 
 
-
-
-
-
-
-
 impl Semaphore {
     /**
-    Creates a new sempahore, specifying if it is initially signalled.
+    Creates a new semaphore, specifying if it is initially signalled.
 */
     pub fn new(initially_signaled: bool) -> Semaphore {
         Semaphore {
@@ -64,6 +58,8 @@ impl Semaphore {
 impl Semaphore {
     /**
     Signals (increments) the semaphore.
+
+    It is a programming error to signal a semaphore that is already signalled.  To do this, use [signal_if_needed].
 */
     pub fn signal(&self) {
         {
@@ -72,7 +68,20 @@ impl Semaphore {
                 assert!(!*guard, "Signalling a semaphore that is already signalled");
                 *guard = true;
                 self.shared.c.notify_one();
+            });
+        }
+    }
 
+    /**
+    Signals (increments) the semaphore if it is not already signalled.
+
+    Like [signal], but does nothing if the semaphore is already signaled.
+*/
+    pub fn signal_if_needed(&self) {
+        {
+            perfwarn!("Semaphore implementation uses mutex", {
+                let mut guard = self.shared.m.lock().unwrap();
+                *guard = true;
             });
 
         }

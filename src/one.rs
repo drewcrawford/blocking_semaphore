@@ -88,6 +88,7 @@ impl Semaphore {
                 let mut guard = self.shared.m.lock().unwrap();
                 dlog::trace_sync!("arrived");
                 *guard = true;
+                self.shared.c.notify_one();
             });
 
         }

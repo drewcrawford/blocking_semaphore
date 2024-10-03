@@ -63,8 +63,11 @@ impl Semaphore {
 */
     pub fn signal(&self) {
         {
+            dlog::trace_sync!("signal");
             perfwarn!("Semaphore implementation uses mutex", {
+                dlog::trace_sync!("waiting for mutex");
                 let mut guard = self.shared.m.lock().unwrap();
+                dlog::trace_sync!("arrived");
                 assert!(!*guard, "Signalling a semaphore that is already signalled");
                 *guard = true;
                 self.shared.c.notify_one();
@@ -79,8 +82,11 @@ impl Semaphore {
 */
     pub fn signal_if_needed(&self) {
         {
+            dlog::trace_sync!("signal_if_needed");
             perfwarn!("Semaphore implementation uses mutex", {
+                dlog::trace_sync!("waiting for mutex");
                 let mut guard = self.shared.m.lock().unwrap();
+                dlog::trace_sync!("arrived");
                 *guard = true;
             });
 
@@ -90,10 +96,16 @@ impl Semaphore {
     /**Waits (decrements) the semaphore.
     */
     pub fn wait(&self) {
+        dlog::trace_sync!("wait");
         perfwarn!("Semaphore implementation uses mutex", {
-            let mut g = self.shared.c.wait_while(self.shared.m.lock().unwrap(), |guard| !*guard).unwrap();
+            dlog::trace_sync!("waiting for mutex");
+            let mtx = self.shared.m.lock().unwrap();
+            dlog::trace_sync!("arrived");
+            let mut g = self.shared.c.wait_while(mtx, |guard| !*guard).unwrap();
             *g = false;
         });
+        dlog::trace_sync!("finished waiting");
+
 
     }
 

@@ -101,7 +101,11 @@ impl Semaphore {
             dlog::trace_sync!("waiting for mutex");
             let mtx = self.shared.m.lock().unwrap();
             dlog::trace_sync!("arrived.  Wait_while...");
-            let mut g = self.shared.c.wait_while(mtx, |guard| !*guard).unwrap();
+            let mut g = self.shared.c.wait_while(mtx, |guard| {
+                dlog::trace_sync!("...wait_while: {guard}", guard=*guard);
+                !*guard
+                }
+            ).unwrap();
             dlog::trace_sync!("...finished wait-while.");
             *g = false;
         });

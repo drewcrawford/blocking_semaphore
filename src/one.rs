@@ -61,7 +61,7 @@ impl Semaphore {
     /**
     Signals (increments) the semaphore.
 
-    It is a programming error to signal a semaphore that is already signalled.  To do this, use [signal_if_needed].
+    It is a programming error to signal a semaphore that is already signalled.  To do this, use [Self::signal_if_needed].
 */
     pub fn signal(&self) {
         {
@@ -81,7 +81,7 @@ impl Semaphore {
     /**
     Signals (increments) the semaphore if it is not already signalled.
 
-    Like [signal], but does nothing if the semaphore is already signaled.
+    Like [Self::signal], but does nothing if the semaphore is already signaled.
 */
     pub fn signal_if_needed(&self) {
         {

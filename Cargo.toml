@@ -2,6 +2,13 @@
 name = "semaphore"
 version = "0.1.0"
 edition = "2021"
+description = "A simple and performant blocking semaphore."
+license = "MIT OR Apache-2.0"
+homepage = "https://sealedabstract.com/code/blocking_semaphore"
+repository = "https://github.com/drewcrawford/blocking_semaphore"
+keywords = ["concurrency","semaphore","blocking"]
+rust-version = "1.75.0"
+categories = ["concurrency"]
 
 [dependencies]
-dlog = {git = "ssh://gitea@gitea.mermaid-gecko.ts.net/Metropolis/dlog.git"}
+logwise = { version = "~0" }

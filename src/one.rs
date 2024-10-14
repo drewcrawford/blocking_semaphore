@@ -1,10 +1,12 @@
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 /*!
-Semaphores which are only "one-high", they can hold values of 0-1.
+A binary semaphore; which are only "one-high", they can hold values of 0-1.
 */
 
 use std::hash::Hash;
 use std::sync::{Arc, Condvar};
-use dlog::perfwarn;
+use logwise::perfwarn;
 
 #[derive(Debug)]
 struct Shared {
@@ -63,11 +65,12 @@ impl Semaphore {
 */
     pub fn signal(&self) {
         {
-            dlog::trace_sync!("signal");
+
+            logwise::trace_sync!("signal");
             perfwarn!("Semaphore implementation uses mutex", {
-                dlog::trace_sync!("waiting for mutex");
+                logwise::trace_sync!("waiting for mutex");
                 let mut guard = self.shared.m.lock().unwrap();
-                dlog::trace_sync!("arrived");
+                logwise::trace_sync!("arrived");
                 assert!(!*guard, "Signalling a semaphore that is already signalled");
                 *guard = true;
                 self.shared.c.notify_one();
@@ -82,11 +85,11 @@ impl Semaphore {
 */
     pub fn signal_if_needed(&self) {
         {
-            dlog::trace_sync!("signal_if_needed");
+            logwise::trace_sync!("signal_if_needed");
             perfwarn!("Semaphore implementation uses mutex", {
-                dlog::trace_sync!("waiting for mutex");
+                logwise::trace_sync!("waiting for mutex");
                 let mut guard = self.shared.m.lock().unwrap();
-                dlog::trace_sync!("arrived");
+                logwise::trace_sync!("arrived");
                 *guard = true;
                 self.shared.c.notify_one();
             });
@@ -97,20 +100,21 @@ impl Semaphore {
     /**Waits (decrements) the semaphore.
     */
     pub fn wait(&self) {
-        dlog::trace_sync!("wait");
+        logwise::trace_sync!("wait");
         perfwarn!("Semaphore implementation uses mutex", {
-            dlog::trace_sync!("waiting for mutex");
+            logwise::trace_sync!("waiting for mutex");
             let mtx = self.shared.m.lock().unwrap();
-            dlog::trace_sync!("arrived.  Wait_while...");
+            logwise::trace_sync!("arrived.  Wait_while...");
             let mut g = self.shared.c.wait_while(mtx, |guard| {
-                dlog::trace_sync!("...wait_while: {guard}", guard=*guard);
+                logwise::trace_sync!("...wait_while: {guard}", guard=*guard);
                 !*guard
                 }
             ).unwrap();
-            dlog::trace_sync!("...finished wait-while.");
+            logwise::trace_sync!("...finished wait-while.");
+
             *g = false;
         });
-        dlog::trace_sync!("finished waiting");
+        logwise::trace_sync!("finished waiting");
 
 
     }
@@ -121,7 +125,7 @@ impl Semaphore {
 
 #[cfg(test)] mod test {
     #[test] fn test_semaphore() {
-        dlog::context::Context::reset();
+        logwise::context::Context::reset("test_semaphore");
         let s = super::Semaphore::new(false);
         s.signal();
         s.wait();

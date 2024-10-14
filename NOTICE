@@ -1,0 +1,4 @@
+blocking_semaphore https://sealedabstract.com/code/blocking_semaphore
+A simple and performant blocking semaphore.
+Copyright 2024 Drew Crawford.
+

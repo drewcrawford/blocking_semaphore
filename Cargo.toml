@@ -9,6 +9,7 @@ repository = "https://github.com/drewcrawford/blocking_semaphore"
 keywords = ["concurrency","semaphore","blocking"]
 rust-version = "1.75.0"
 categories = ["concurrency"]
+exclude = [".*"]
 
 [dependencies]
 logwise = { version = "~0" }
